@@ -17,12 +17,33 @@ export const gameMechanic = {
    },
 
 
+   // ==================================================
+   startRandomSpinning() {
+      this.spinAllReels([1700, 2200, 2600]);
+      const spinningTime1 = 1 + 2 * _.random();
+      const spinningTime2 = spinningTime1 + _.random() * (3 - spinningTime1);
+      const spinningTime3 = spinningTime2 + _.random() * (3 - spinningTime2);
+
+      _.setTimeout(() => this.stopReel(this.elemContainer.children[0]), spinningTime1 * 1000);
+      _.setTimeout(() => this.stopReel(this.elemContainer.children[1]), spinningTime2 * 1000);
+      _.setTimeout(() => this.stopReel(this.elemContainer.children[2]), spinningTime3 * 1000);
+
+      _.setTimeout(() => {
+         const btnSpin = cc.find('Canvas/play_area/btn_spin')
+         cc.find('disabled', btnSpin).active = false;
+      }, spinningTime3 * 1000);
+
+   },
+
+
+   // ==================================================
    updateFunc(dt) {
       this.elemContainer.children.map((reelNode) => {
          if (reelNode.isStopped) return;
          this.spinningUpdateFunc(reelNode, dt);
       });
    },
+
 
    spinningUpdateFunc(reelNode: cc.Node, dt: number) {
       const totalHeight = reelNode.totalHeight
@@ -56,7 +77,8 @@ export const gameMechanic = {
 
 
    // ==================================================
-   spinAllReels(speedArr: number[] = [1000, 1700, 2200]) {
+   spinAllReels(speedArr?) {
+      speedArr = speedArr || [1700, 1700, 1700];
       this.elemContainer.children.map((reelNode, i) => {
          reelNode.speed = speedArr[i];
          reelNode.isStopped = false;
@@ -79,13 +101,6 @@ export const gameMechanic = {
          cc.tween(cellNode).by(xTime, { y: -distanceLeft }).start();
       });
       reelNode.passedLength += distanceLeft;
-
-      // const timeStep = 1 / 60;
-      // const timerVar = _.setInterval(() => {
-      //    this.spinningUpdateFunc(reelNode, (xTime < timeStep ? xTime : timeStep));
-      //    xTime -= timeStep;
-      //    if (xTime <= 0) _.clearInterval(timerVar);
-      // }, timeStep * 1000);
    },
 
 

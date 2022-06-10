@@ -3,12 +3,11 @@ const _ = _G._;
 
 export const bindButtonHandlers = {
    run() {
-      _G.utilsUI.makeButton(
-         cc.find('Canvas/play_area/btn_spin'),
-         () => {
-            _G.gameMechanic.spinAllReels();
-         }
-      );
+      const btnSpin = cc.find('Canvas/play_area/btn_spin')
+      _G.utilsUI.makeButton(btnSpin, () => {
+         cc.find('disabled', btnSpin).active = true;
+         _G.gameMechanic.startRandomSpinning();
+      });
 
 
       _G.utilsUI.makeButton(
