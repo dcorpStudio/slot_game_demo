@@ -112,7 +112,7 @@ export default {
          const timeNow = this.getMsPassedUTC();
          const dt = timeNow - lastime;
          lastime = timeNow;
-         f(dt);
+         f(dt / 1000);
       }, 0.01);
       return intervalVar;
    },
