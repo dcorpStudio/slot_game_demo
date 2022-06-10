@@ -8,6 +8,7 @@ export const coreUI = {
 
    init() {
       bindButtonHandlers.run();
+      this.toggleCheatTool();
    },
 
    toggleCheatTool() {
@@ -15,6 +16,7 @@ export const coreUI = {
       const isShowing = dialogNode.y == 0;
       dialogNode.y = isShowing ? dialogNode.height : 0;
       cc.find('Canvas/play_area/CheatToolBackground/dialog/Arrow').angle = isShowing ? 0 : 180;
+      _G.gameMechanic.isCheating = !isShowing;
    },
 
 

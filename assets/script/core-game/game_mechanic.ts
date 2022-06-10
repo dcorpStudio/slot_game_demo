@@ -6,7 +6,7 @@ const CELL_HEIGHT = 450;
 export const gameMechanic = {
    elemContainer: null as cc.Node,
    cheatResultArr: [0, 0, 0],
-   // cheatResultArr: [0, 2, 3],
+   isCheating: false,
 
    init() {
       const collisionManager = cc.director.getCollisionManager();
@@ -42,7 +42,7 @@ export const gameMechanic = {
 
    calculateSpinningTime(speedArr) {
       // ----------- cheat result
-      if (this.cheatResultArr.join(',') !== '0,0,0') {
+      if (this.isCheating && this.cheatResultArr.join(',') !== '0,0,0') {
          const resultArr = this.cheatResultArr;
          const resultIndexArr = resultArr.map((result, reelIndex) => {
             result = result || (_.randomNumber(3) + 1);
@@ -61,7 +61,7 @@ export const gameMechanic = {
             let passLengthRemaining = netPassedLength - reelNode.passedLength;
             if (passLengthRemaining < 0) passLengthRemaining += reelNode.totalHeight;
             let time = passLengthRemaining / speedArr[reelIndex] - (CELL_HEIGHT / 2) / speedArr[reelIndex];
-            if (time < 0) time += reelNode.totalHeight / speedArr[reelIndex];
+            if (time < 1) time += reelNode.totalHeight / speedArr[reelIndex];
             return time;
          });
 
@@ -91,6 +91,12 @@ export const gameMechanic = {
       if (resultArr[0] == resultArr[1] && resultArr[1] == resultArr[2]) {
          _G.coreFX.playWinFx(callback);
       } else if (callback) callback();
+   },
+
+
+   setCheatInput(reelIndex, cheatValue) {
+      _.log(`setCheatInput: ${reelIndex}, ${cheatValue}`);
+      this.cheatResultArr[reelIndex] = cheatValue;
    },
 
 
