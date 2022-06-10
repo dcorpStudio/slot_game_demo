@@ -30,9 +30,25 @@ export const gameMechanic = {
 
       _.setTimeout(() => {
          const btnSpin = cc.find('Canvas/play_area/btn_spin')
-         cc.find('disabled', btnSpin).active = false;
-      }, spinningTime3 * 1000);
+         this.checkResult(() => {
+            cc.find('disabled', btnSpin).active = false;
+         });
+      }, spinningTime3 * 1000 + 300);
 
+   },
+
+
+   checkResult(callback?: Function) {
+      const resultArr = this.elemContainer.children.map((reelNode, reelIndex) => {
+         const resultIndex = _.round((reelNode.passedLength % reelNode.totalHeight) / CELL_HEIGHT);
+         const configReelArr = _G.configGame.reelArr[reelIndex];
+         return configReelArr[resultIndex];
+      });
+
+      _.log(` resultArr = ${resultArr}`);
+      if (resultArr[0] == resultArr[1] && resultArr[1] == resultArr[2]) {
+         _G.coreFX.playWinFx(callback);
+      } else if (callback) callback();
    },
 
 
@@ -57,7 +73,6 @@ export const gameMechanic = {
 
    // ==================================================
    renderAllReels() {
-      const bottomColliderContainer = cc.find('Canvas/play_area/bottom_colliders');
       this.elemContainer.children.map((reelNode, i) => {
          this.renderReel(reelNode, _G.configGame.reelArr[i]);
          reelNode.totalHeight = CELL_HEIGHT * reelNode.children.length;
@@ -69,7 +84,7 @@ export const gameMechanic = {
 
    renderReel(reelNode: cc.Node, reelSymboArr: number[]) {
       reelNode.removeAllChildren();
-      reelSymboArr.map((symbolIndex, i) => {
+      reelSymboArr.slice().reverse().map((symbolIndex, i) => {
          const cellNode = _.copyNode(cc.find(`Canvas/sample_nodes/cell_${symbolIndex}`), reelNode);
          cellNode.y = CELL_HEIGHT * (reelSymboArr.length - 1 - i);
       });
