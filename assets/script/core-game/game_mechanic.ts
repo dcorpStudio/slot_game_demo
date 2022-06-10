@@ -5,6 +5,8 @@ const CELL_HEIGHT = 450;
 
 export const gameMechanic = {
    elemContainer: null as cc.Node,
+   // cheatResultArr: [0, 0, 0],
+   cheatResultArr: [1, 1, 1],
 
    init() {
       const collisionManager = cc.director.getCollisionManager();
@@ -19,23 +21,63 @@ export const gameMechanic = {
 
    // ==================================================
    startRandomSpinning() {
-      this.spinAllReels([1700, 2200, 2600]);
-      const spinningTime1 = 1 + 2 * _.random();
-      const spinningTime2 = spinningTime1 + _.random() * (3 - spinningTime1);
-      const spinningTime3 = spinningTime2 + _.random() * (3 - spinningTime2);
+      const speedArr = [1500, 1700, 2200];
 
+      const [spinningTime1, spinningTime2, spinningTime3] = this.calculateSpinningTime(speedArr);
       _.setTimeout(() => this.stopReel(this.elemContainer.children[0]), spinningTime1 * 1000);
       _.setTimeout(() => this.stopReel(this.elemContainer.children[1]), spinningTime2 * 1000);
       _.setTimeout(() => this.stopReel(this.elemContainer.children[2]), spinningTime3 * 1000);
 
+      const resultTime = _.max(spinningTime1, spinningTime2, spinningTime3);
       _.setTimeout(() => {
          const btnSpin = cc.find('Canvas/play_area/btn_spin')
          this.checkResult(() => {
             cc.find('disabled', btnSpin).active = false;
          });
-      }, spinningTime3 * 1000 + 300);
+      }, resultTime * 1000 + 300);
 
+      this.spinAllReels(speedArr);
    },
+
+
+   calculateSpinningTime(speedArr) {
+      // ----------- cheat result
+      if (this.cheatResultArr.join(',') !== '0,0,0') {
+         const resultArr = this.cheatResultArr;
+         const resultIndexArr = resultArr.map((result, reelIndex) => {
+            result = result || (_.randomNumber(3) + 1);
+            const configReelArr = _G.configGame.reelArr[reelIndex];
+            const resultIndex = configReelArr.indexOf(result - 1);
+            // _.log(`reelIndex: ${reelIndex}, symbol: ${result - 1}, resultIndex: ${resultIndex}`);
+            return resultIndex;
+         });
+         _.log(` resultIndexArr =${resultIndexArr} `);
+
+         const timeArr = resultIndexArr.map((resultIndex, reelIndex) => {
+            const configReelArr = _G.configGame.reelArr[reelIndex];
+            if (resultIndex < configReelArr.length) resultIndex += configReelArr.length;
+            const netPassedLength = resultIndex * CELL_HEIGHT;
+            const reelNode = this.elemContainer.children[reelIndex];
+            let passLengthRemaining = netPassedLength - reelNode.passedLength;
+            if (passLengthRemaining < 0) passLengthRemaining += reelNode.totalHeight;
+            let time = passLengthRemaining / speedArr[reelIndex] - (CELL_HEIGHT / 2) / speedArr[reelIndex];
+            if (time < 0) time += reelNode.totalHeight / speedArr[reelIndex];
+            return time;
+         });
+
+         _.log(`timeArr = ${timeArr.map(t => t.toFixed(3))}`);
+         return timeArr;
+      }
+
+      // ----------- random result
+      else {
+         const spinningTime1 = 1 + 2 * _.random();
+         const spinningTime2 = spinningTime1 + _.random() * (3 - spinningTime1);
+         const spinningTime3 = spinningTime2 + _.random() * (3 - spinningTime2);
+         return [spinningTime1, spinningTime2, spinningTime3];
+      }
+   },
+
 
 
    checkResult(callback?: Function) {
