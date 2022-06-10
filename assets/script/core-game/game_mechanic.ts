@@ -5,8 +5,8 @@ const CELL_HEIGHT = 450;
 
 export const gameMechanic = {
    elemContainer: null as cc.Node,
-   // cheatResultArr: [0, 0, 0],
-   cheatResultArr: [1, 1, 1],
+   cheatResultArr: [0, 0, 0],
+   // cheatResultArr: [0, 2, 3],
 
    init() {
       const collisionManager = cc.director.getCollisionManager();
