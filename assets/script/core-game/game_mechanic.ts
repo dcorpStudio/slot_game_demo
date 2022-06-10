@@ -1,6 +1,8 @@
 import * as _G from '../system/all_modules';
 const { _, $ } = _G;
 
+const CELL_HEIGHT = 450;
+
 export const gameMechanic = {
    elemContainer: null as cc.Node,
 
@@ -10,9 +12,6 @@ export const gameMechanic = {
 
       this.elemContainer = cc.find('Canvas/play_area/elem_container');
       this.renderAllReels();
-
-      _.log(2 % 5);
-      _.log(-2 % 5);
    },
 
    // ==================================================
@@ -20,7 +19,8 @@ export const gameMechanic = {
       const bottomColliderContainer = cc.find('Canvas/play_area/bottom_colliders');
       this.elemContainer.children.map((reelNode, i) => {
          this.renderReel(reelNode, _G.configGame.reelArr[i]);
-         reelNode.bottomColliderNode = cc.find(`cell_bottom_collider_${i}`, bottomColliderContainer);
+         const colliderNode = reelNode.bottomColliderNode = cc.find(`cell_bottom_collider_${i}`, bottomColliderContainer);
+         reelNode.topCellPosY = colliderNode.y + CELL_HEIGHT * (reelNode.children.length + 0.5);
       });
    },
 
@@ -28,7 +28,7 @@ export const gameMechanic = {
       reelNode.removeAllChildren();
       reelSymboArr.map((symbolIndex, i) => {
          const cellNode = _.copyNode(cc.find(`Canvas/sample_nodes/cell_${symbolIndex}`), reelNode);
-         cellNode.y = cellNode.height * i;
+         cellNode.y = CELL_HEIGHT * i;
       });
    },
 
@@ -57,12 +57,10 @@ export const gameMechanic = {
    },
 
    onCellHitBottom(cellNode: cc.Node) {
-      const extraHeight = cellNode.parent.children.length * cellNode.height;
       cellNode.stopAllActions();
-      cellNode.y += extraHeight;
+      cellNode.y = cellNode.parent.topCellPosY;
       this.startCellFalling(cellNode);
    },
-
 
 
    stopAllReels() {
@@ -72,14 +70,13 @@ export const gameMechanic = {
    },
 
    stopReel(reelNode: cc.Node) {
-      reelNode.bottomColliderNode.active = false;
-      const firstCellNode = reelNode.children[0];
-      let firstCellNodeY = firstCellNode.y, safeCount = 100;
-      while (firstCellNodeY < 0 && safeCount--) firstCellNodeY += firstCellNode.height;
-      const gapDistance = (firstCellNodeY % firstCellNode.height);
-      _.log(`gapDistance = ${gapDistance}`);
+      // reelNode.bottomColliderNode.active = false;
       reelNode.children.map(cellNode => {
          cellNode.stopAllActions();
+         let cellNodeY = cellNode.y, safeCount = 100;
+         while (cellNodeY < 0 && safeCount--) cellNodeY += CELL_HEIGHT;
+         const gapDistance = (cellNodeY % CELL_HEIGHT);
+         _.log(`gapDistance = ${gapDistance}`);
          cc.tween(cellNode).by(gapDistance / reelNode.spinningSpeed, { y: -gapDistance }).start();
       });
    },
