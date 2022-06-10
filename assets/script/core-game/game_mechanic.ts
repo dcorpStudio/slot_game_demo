@@ -10,12 +10,17 @@ export const gameMechanic = {
 
       this.elemContainer = cc.find('Canvas/play_area/elem_container');
       this.renderAllReels();
+
+      _.log(2 % 5);
+      _.log(-2 % 5);
    },
 
    // ==================================================
    renderAllReels() {
-      this.elemContainer.children.map((childNode, i) => {
-         this.renderReel(childNode, _G.configGame.reelArr[i]);
+      const bottomColliderContainer = cc.find('Canvas/play_area/bottom_colliders');
+      this.elemContainer.children.map((reelNode, i) => {
+         this.renderReel(reelNode, _G.configGame.reelArr[i]);
+         reelNode.bottomColliderNode = cc.find(`cell_bottom_collider_${i}`, bottomColliderContainer);
       });
    },
 
@@ -29,20 +34,26 @@ export const gameMechanic = {
 
 
    // ==================================================
-   spinAllReels() {
-      this.elemContainer.children.map((childNode, i) => {
-         this.spinSingleReel(childNode);
+   spinAllReels(speedArr: number[] = [1000, 1700, 2200]) {
+      this.elemContainer.children.map((reelNode, i) => {
+         this.spinSingleReel(reelNode, speedArr[i]);
       });
    },
 
-   spinSingleReel(reelNode: cc.Node) {
+
+   spinSingleReel(reelNode: cc.Node, speed = 500) {
+      reelNode.bottomColliderNode.active = true;
+      reelNode.spinningSpeed = speed;
       reelNode.children.map(cellNode => this.startCellFalling(cellNode));
    },
 
+
    startCellFalling(cellNode: cc.Node) {
-      cc.tween(cellNode).repeatForever(
-         cc.tween().by(5, { y: -9999 })
-      ).start();
+      const speed = cellNode.parent.spinningSpeed;
+      cc.tween(cellNode)
+         .repeatForever(
+            cc.tween().by(1e4 / speed, { y: -1e4 })
+         ).start();
    },
 
    onCellHitBottom(cellNode: cc.Node) {
@@ -50,6 +61,27 @@ export const gameMechanic = {
       cellNode.stopAllActions();
       cellNode.y += extraHeight;
       this.startCellFalling(cellNode);
+   },
+
+
+
+   stopAllReels() {
+      this.elemContainer.children.map((reelNode, i) => {
+         this.stopReel(reelNode);
+      });
+   },
+
+   stopReel(reelNode: cc.Node) {
+      reelNode.bottomColliderNode.active = false;
+      const firstCellNode = reelNode.children[0];
+      let firstCellNodeY = firstCellNode.y, safeCount = 100;
+      while (firstCellNodeY < 0 && safeCount--) firstCellNodeY += firstCellNode.height;
+      const gapDistance = (firstCellNodeY % firstCellNode.height);
+      _.log(`gapDistance = ${gapDistance}`);
+      reelNode.children.map(cellNode => {
+         cellNode.stopAllActions();
+         cc.tween(cellNode).by(gapDistance / reelNode.spinningSpeed, { y: -gapDistance }).start();
+      });
    },
 
 

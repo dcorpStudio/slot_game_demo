@@ -8,6 +8,14 @@ export const bindButtonHandlers = {
          () => {
             _G.gameMechanic.spinAllReels();
          }
+      );
+
+
+      _G.utilsUI.makeButton(
+         cc.find('Canvas/play_area/btn_stop'),
+         () => {
+            _G.gameMechanic.stopAllReels();
+         }
       )
    },
 
