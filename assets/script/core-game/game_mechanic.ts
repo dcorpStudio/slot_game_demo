@@ -20,12 +20,10 @@ export const gameMechanic = {
    },
 
    renderReel(reelNode: cc.Node, reelSymboArr: number[]) {
-      _.log(` reelSymboArr  =${reelSymboArr} `);
       reelNode.removeAllChildren();
       reelSymboArr.map((symbolIndex, i) => {
          const cellNode = _.copyNode(cc.find(`Canvas/sample_nodes/cell_${symbolIndex}`), reelNode);
          cellNode.y = cellNode.height * i;
-         _.log(` symbolIndex ${i} cellNode.y=${cellNode.y} `);
       });
    },
 
@@ -38,17 +36,20 @@ export const gameMechanic = {
    },
 
    spinSingleReel(reelNode: cc.Node) {
-      reelNode.children.map(cellNode => {
-         cc.tween(cellNode).repeatForever(
-            cc.tween().by(5, { y: -9999 })
-         ).start();
-      });
+      reelNode.children.map(cellNode => this.startCellFalling(cellNode));
    },
 
+   startCellFalling(cellNode: cc.Node) {
+      cc.tween(cellNode).repeatForever(
+         cc.tween().by(5, { y: -9999 })
+      ).start();
+   },
 
    onCellHitBottom(cellNode: cc.Node) {
-      _.log(` onCellHitBottom cellNode.y=${cellNode.y} `);
-      cellNode.y += cellNode.parent.children.length * cellNode.height;
+      const extraHeight = cellNode.parent.children.length * cellNode.height;
+      cellNode.stopAllActions();
+      cellNode.y += extraHeight;
+      this.startCellFalling(cellNode);
    },
 
 
